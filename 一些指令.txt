@@ -1,0 +1,100 @@
+會統整當下環境中的所有套件：pip freeze > requirements.txt
+下載檔案中的所有套件：pip install -r requirements.txt
+
+| 終端機類型                           | 清空畫面指令       | 備註                |
+| ------------------------------------- | ------------ | ----------------- |
+| **PowerShell**                        | `Clear-Host` | `clear` 不可用，請用這個  |
+| **Command Prompt (cmd)**              | `cls`        | Windows 傳統指令      |
+| **Git Bash / WSL / Linux / macOS 終端** | `clear`      | Linux/macOS 的標準指令 |
+
+
+
+
+每次運作系統
+pushd "C:\Users\abby\Desktop\洗衣機\GPT創預約系統\appointment_scheduler"
+python manage.py runserver
+(開另一個終端機)
+python gptlinebot.py
+(開另一個終端機)
+python manage.py run_scheduler
+
+手動
+ngrok http 5000
+
+
+有資料要更新的時候
+python manage.py migration
+python manage.py makemigrations
+(用來檢查這次資料和舊資料的差別)
+python manage.py migrate
+(將檢查到的差別加進資料庫-->更新資料庫)
+
+系統網站
+http://127.0.0.1:8000/
+
+
+| 任務                 | 指令                               | 說明                              |
+| ------------------ | -------------------------------- | ---------------------------- |
+| 1️⃣ Django 預約主系統   | `python manage.py runserver`     | 啟動主網站                    |
+| 2️⃣ Flask LINE Bot | `python gptlinebot.py`           | 啟動 LINE Webhook、ChatGPT對話、提醒訊息 |
+| 3️⃣ APScheduler 任務 | `python manage.py run_scheduler` | 定時提醒（查洗衣進度、發 LINE）    |
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+postgres / 911222
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

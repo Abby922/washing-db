@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: django-backend
+    env: python
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "gunicorn appointment_scheduler.wsgi:application"
+    envVars:
+      - fromDotEnv: true
+    plan: free
+
+  - type: web
+    name: flask-linebot
+    env: python
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "python gptlinebot.py"
+    envVars:
+      - fromDotEnv: true
+    plan: free
+
+databases:
+  - name: appointment-db
+    plan: free

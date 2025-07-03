@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {% load static %}
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'washing.css' %}?v={{ version }}">
+    <title class="pageuse">Register</title>
+</head>
+<body>
+    <div class="topofpage">
+            <h2 class="pagetitle">
+                洗衣機預約系統
+            </h2>
+    </div>
+    <h2 class="pagetitle">Register</h2>
+    <form method="post">
+        {% csrf_token %}
+        <div class="terms">
+            <p>
+                {{ form.student_name.label_tag }}<br>
+                {{ form.student_name }}
+            </p>
+            <p>
+                {{ form.student_id.label_tag }}<br>
+                {{ form.student_id }}
+            </p>
+            <p>
+                {{ form.email.label_tag }}<br>
+                {{ form.email }}
+            </p>
+            <p>
+                {{ form.username.label_tag }}<br>
+                {{ form.username }}
+            </p>
+            <p>
+                {{ form.password1.label_tag }}<br>
+                {{ form.password1 }}
+            </p>
+            <p>
+                {{ form.password2.label_tag }}<br>
+                {{ form.password2 }}
+            </p>
+        </div>
+        <div class="button-container">
+            <button type="submit" class="loginbutton">Register</button>
+        </div>
+    </form>
+</body>
+</html>
