@@ -44,11 +44,17 @@ http://127.0.0.1:8000/
 
 
 
+推到公開網域(powershell終端機)
 
+git add .
+git commit -m "說明你這次修改了什麼"
+git push
 
-
-
-
+(保險一點可以再add.之前輸過這幾個)
+Remove-Item .env -Force
+Remove-Item -Recurse -Force **\__pycache__\
+Remove-Item -Recurse -Force **\*.pyc
+Remove-Item -Recurse -Force **\*.log
 
 
 
