@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% load socialaccount %}
+{% block title %}
+Allauth Test
+{% endblock %}
+{% block content %}
+    <div class="topofpage">
+            <h2 class="pagetitle">
+                洗衣機預約系統
+            </h2>
+    </div>
+
+    <h2 class="pagetitle">Allauth Test</h2>
+
+{% if user.is_authenticated %}
+  <p class="response">Hello, {{ user.username }}!</p>
+  <a href="{% url 'account_logout' %}">Logout</a><br>
+{% else %}
+  <p class="response">You are not logged in</p>
+  <ul>
+    <li><a href="{% url 'account_login' %}">Login Page</a></li>
+    <li><a href="{% provider_login_url 'google' %}">Google登入</a></li>
+  </ul>
+{% endif %}
+{% endblock %}

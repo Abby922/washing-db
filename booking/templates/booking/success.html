@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {% load static %}
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'washing.css' %}?v={{ version }}">
+    <title class="pageuse">Register</title>
+
+    <title>Success</title>
+</head>
+<body>
+    <div class="topofpage">
+            <h2 class="pagetitle">
+                洗衣機預約系統
+            </h2>
+    </div>
+
+    <h1 class="pagetitle">Appointment booked successfully!</h1>
+
+    <a href="{% url 'book_appointment' %}">Book another appointment</a>
+</body>
+</html>

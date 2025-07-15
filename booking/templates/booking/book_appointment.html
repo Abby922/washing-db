@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {% load static %}
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'washing.css' %}?v={{ version }}">
+    <title class="pageuse">Register</title>
+    <title>Book an Appointment</title>
+    
+    <!-- 引入 jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+    <script type="text/javascript">
+        $(document).ready(function() {
+            
+            // 隐藏时间段选择字段的输入框
+            $('#id_choices').hide();
+
+            var existingAppointmentsNum = {{ existing_appointmentsNum|safe }};
+            console.log("Existing Appointments Count: " + existingAppointmentsNum);
+
+        
+        
+            // 更新复选框状态
+            function updateCheckboxes(selectedDate, selectedMachine, reservedSlots) {
+                var currentDate = new Date();
+                var currentDateString = currentDate.toISOString().split('T')[0]; // 当前日期 (YYYY-MM-DD)
+
+                $('input[type="checkbox"]').each(function() {
+                    var timeSlot = $(this).val();
+                    var [startTime, endTime] = timeSlot.split(' - ');
+                    var slotStartTime = new Date(selectedDate + 'T' + startTime);
+
+                    // 禁用早于当前时间的时间段
+                    if (selectedDate === currentDateString && slotStartTime <= currentDate) {
+                        $(this).prop('disabled', true);
+                    } else {
+                        $(this).prop('disabled', reservedSlots.includes(timeSlot));  // 禁用已预定的时间段
+                    }
+                });
+            }
+
+            // 日期选择变化时的事件
+            $('#id_date').change(function() {
+                var selectedDate = $(this).val();  // 获取选择的日期
+                var selectedMachine = $('#id_machine').val();  // 获取选择的机器
+
+                // 如果日期和机器都已选择，则发送 AJAX 请求
+                if (selectedDate && selectedMachine) {
+                    $('input[type="checkbox"]').prop('checked', false);  // 清空选中的时间段
+                    $('#id_choices').show();  // 显示时间段选择框
+
+                    // 发送 AJAX 请求
+                    $.ajax({
+                        url: '{% url "get_reserved_slots" %}',  // 替换为正确的 URL
+                        data: {
+                            'date': selectedDate,
+                            'machine': selectedMachine  // 传递选择的机器
+                        },
+                        success: function(data) {
+                            updateCheckboxes(selectedDate, selectedMachine, data);  // 更新选择框状态
+                        },
+                        error: function() {
+                            alert('Failed to fetch reserved slots. Please try again.');
+                        }
+                    });
+                } else {
+                    $('#id_choices').hide();  // 如果未选择日期或机器，隐藏时间段选择框
+                }
+            });
+
+            // 监听机器选择器的变化
+            $('#id_machine').change(function() {
+                var selectedDate = $('#id_date').val();  // 获取选择的日期
+                var selectedMachine = $(this).val();  // 获取选择的机器
+
+                // 如果日期和机器都已选择，则发送 AJAX 请求
+                if (selectedDate && selectedMachine) {
+                    $('input[type="checkbox"]').prop('checked', false);  // 清空选中的时间段
+                    $('#id_choices').show();  // 显示时间段选择框
+
+                    // 发送 AJAX 请求
+                    $.ajax({
+                        url: '{% url "get_reserved_slots" %}',  // 替换为正确的 URL
+                        data: {
+                            'date': selectedDate,
+                            'machine': selectedMachine  // 传递选择的机器
+                        },
+                        success: function(data) {
+                            updateCheckboxes(selectedDate, selectedMachine, data);  // 更新选择框状态
+                        },
+                        error: function() {
+                            alert('Failed to fetch reserved slots. Please try again.');
+                        }
+                    });
+                } else {
+                    $('#id_choices').hide();  // 如果未选择日期或机器，隐藏时间段选择框
+                }
+            });
+
+            // 提交表单时限制最多选择两个时间段
+            $('form').on('submit', function(event) {
+                var checkedBoxes = $('input[type="checkbox"]:checked').length;
+                var totalAppointments = existingAppointmentsNum + checkedBoxes;
+
+                if (totalAppointments > 2) {
+                    alert('You can only select up to two time slots.');
+                    event.preventDefault();
+                }
+            });
+
+            // 实时限制最多选择两个时间段
+            $('input[type="checkbox"]').change(function() {
+                var checkedBoxes = $('input[type="checkbox"]:checked').length;
+                var totalAppointments = existingAppointmentsNum + checkedBoxes;
+
+                if (totalAppointments > 2) {
+                    alert('You can only select up to two time slots.');
+                    $(this).prop('checked', false);
+                }
+            });
+
+            // 设置日期选择器的最小值为当前日期
+            $('#id_date').attr('min', new Date().toISOString().split('T')[0]);
+        });
+    </script>
+</head>
+
+<body>
+    <div class="topofpage">
+        <h2 class="pagetitle">
+            洗衣機預約系統
+        </h2>
+    </div>
+
+    <h1 class="pagetitle">Book an Appointment</h1>
+    <!-- 登出表单 -->
+    <form method="post" action="{% url 'logout' %}">
+        {% csrf_token %}
+        <div class="button-container">
+            <button type="submit" class="loginbutton">Logout</button>
+        </div>
+    </form>
+    
+    <!-- 预约表单 -->
+    <form method="post"> 
+        {% csrf_token %} 
+        
+        <!-- 日期選擇 --> 
+        <div class="date-container"> 
+            <label for="date">Select Date:</label> 
+            {{ form.date }} 
+        </div> 
+        
+        <!-- 機器選擇 --> 
+        <div class="machine-container">
+            <label for="machine">Select Machine:</label>
+            {{ form.machine }}  <!-- 顯示機器選擇欄位 -->
+        </div>
+
+        <!-- 時間段勾選框（初始隱藏） -->
+        <div id="id_choices" class="checkbox-container" style="display:none;">  <!-- 初始化隐藏 -->
+            {% for field in form.choices %}
+                <div class="checkbox-wrapper"> 
+                    {{ field }} 
+                </div> 
+            {% endfor %}
+        </div>
+
+        <!-- 提交按鈕 --> 
+        <div class="button-container"> 
+            <button type="submit" class="loginbutton">Submit</button> 
+        </div> 
+    </form>
+
+    <!-- Display existing appointments -->
+    <div class="tableuse">Your Existing Appointments</div>
+    <div class="table-container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Machine</th>
+                    <th>Start Time</th>
+                    <th>End Time</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for appointment in existing_appointments %}
+                <tr>
+                    <td>{{ appointment.date|date:"Y/n/j" }}</td>
+                    <td>{{ appointment.machine }}</td>
+                    <td>{{ appointment.start_time|time:"H:i" }}</td>
+                    <td>{{ appointment.end_time|time:"H:i" }}</td>
+                    <td>
+                        <form method="post" action="{% url 'delete_appointment' appointment.id %}" style="display:inline;">
+                            {% csrf_token %}
+                            <div class="button-container">
+                                <button type="submit" class="loginbutton">Delete</button>
+                            </div>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+
+    <!-- 显示 MachineStatus 模型数据 -->
+    <div class="tableuse">Machine Status List</div>
+    <div class="table-container">
+        <table class="table">
+            <thead>
+                <tr>    
+                    <th>Name</th>
+                    <th>Status</th>
+                    <th>Time_Remaining</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for status in machine_statuses %}
+                <tr>
+                    <td>{{ status.name }}</td>
+                    <td>{{ status.status }}</td>
+                    <td>{{ status.time_remaining }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
