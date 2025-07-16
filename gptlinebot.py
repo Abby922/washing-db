@@ -3,6 +3,12 @@ print("🔵 執行中：gptlinebot.py")
 from flask import Flask, request, abort
 from datetime import datetime
 import django, os
+from linebot import LineBotApi, WebhookHandler
+from linebot.exceptions import InvalidSignatureError
+from linebot.models import MessageEvent, TextMessage, TextSendMessage
+from booking.models import CustomUser, Appointment
+from apscheduler.schedulers.background import BackgroundScheduler
+from django_apscheduler.jobstores import DjangoJobStore
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -15,14 +21,14 @@ django.setup()
 import logging
 logging.getLogger('django.db.backends').setLevel(logging.WARNING)
 
-from linebot import LineBotApi, WebhookHandler
-from linebot.exceptions import InvalidSignatureError
-from linebot.models import MessageEvent, TextMessage, TextSendMessage
 
-from booking.models import CustomUser, Appointment
 
 # Flask 應用
 app = Flask(__name__)
+scheduler = BackgroundScheduler()
+scheduler.add_jobstore(DjangoJobStore(), "default")
+
+scheduler.start()
 
 LINE_CHANNEL_ACCESS_TOKEN = os.getenv("LINE_CHANNEL_ACCESS_TOKEN")
 LINE_CHANNEL_SECRET = os.getenv("LINE_CHANNEL_SECRET")

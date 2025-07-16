@@ -11,20 +11,10 @@ from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 from booking.models import Appointment, MachineStatus
 
-# ✅ 建立 Chrome 設定（可選：不跳出視窗、無頭模式）
+# 建立 Chrome 設定（可選：不跳出視窗、無頭模式）
 chrome_options = Options()
 chrome_options.binary_location = r"C:\Program Files\Google\Chrome\Application\chrome.exe"
-# chrome_options.add_argument("--headless")  # 如不想開視窗可取消註解這行
-
-# ✅ 使用自動下載驅動方式啟動瀏覽器
-driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
-
-# ✅ 測試是否正常打開頁面
-driver.get("https://www.google.com")
-print(driver.title)
-
-# 記得關掉瀏覽器
-driver.quit()
+chrome_options.add_argument("--headless")  # 如不想開視窗可取消註解這行
 
 logger = logging.getLogger(__name__)
 

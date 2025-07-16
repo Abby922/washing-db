@@ -6,6 +6,7 @@ from datetime import datetime
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect, render
+from django.http import HttpResponseForbidden
 
 ALLOWED_IDS_FILE_PATH = r"C:\Users\abby\Desktop\洗衣機\GPT創預約系統\appointment_scheduler\booking\allowed_ids.txt"
 
@@ -79,7 +80,10 @@ def book_appointment(request):
 def delete_appointment(request, appointment_id):
     # 获取要删除的预约对象
     appointment = get_object_or_404(Appointment, id=appointment_id)
-    
+
+    if appointment.user != request.user and not request.user.is_staff:
+        return HttpResponseForbidden("你沒有權限刪除這筆預約")
+
     if request.method == 'POST':
         appointment.delete()
         return redirect('book_appointment')  # 重定向回预约列表页面
