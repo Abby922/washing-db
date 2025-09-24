@@ -8,11 +8,11 @@ from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect, render
 from django.http import HttpResponseForbidden
 
-ALLOWED_IDS_FILE_PATH = r"C:\Users\abby\Desktop\洗衣機\GPT創預約系統\appointment_scheduler\booking\allowed_ids.txt"
+ALLOWED_IDS_FILE_PATH = r"C:\Users\abby\Desktop\洗衣機\washing_scheduler\booking\allowed_ids.txt"
 
 
 def is_allowed_student_id(student_id):
-    """检查学生 ID 是否在允许注册的列表中"""
+    print("检查学生 ID 是否在允许注册的列表中")
     with open(ALLOWED_IDS_FILE_PATH, 'r') as file:
         allowed_ids = file.read().splitlines()
     return student_id in allowed_ids
@@ -21,7 +21,7 @@ def is_allowed_student_id(student_id):
 @login_required(login_url='/booking/login/')
 def book_appointment(request):
     # 获取当前用户的预约记录
-    existing_appointments = Appointment.objects.filter(student_id=request.user.student_id)
+    existing_appointments = Appointment.objects.filter(user__student_id=request.user.student_id)
     existing_appointmentsNum = len(existing_appointments)
 
     if request.method == 'POST':
@@ -51,13 +51,11 @@ def book_appointment(request):
 
                 # Create and save appointment using the current user
                 appointment = Appointment(
-                    name=request.user.student_name,  # Use user's full name
-                    email=request.user.email,        # Use user's email
-                    student_id=request.user.student_id,  # Use user's student_id
+                    user=request.user,       # 外鍵直接設整個 user 物件
                     date=date,
                     start_time=start_time,
                     end_time=end_time,
-                    machine=machine  # Add machine to the appointment
+                    machine=machine
                 )
                 appointment.save()
 
@@ -103,23 +101,26 @@ def get_reserved_slots(request):
         return JsonResponse({'error': 'Invalid date format. Expected format: YYYY-MM-DD'}, status=400)
 
     # 取得機器參數
-    machine = request.GET.get('machine')  # 假設前端傳遞的是 machine_id
-    if not machine:
+    machine_id = request.GET.get('machine')  # 接收到的是 ID
+    if not machine_id:
         return JsonResponse({'error': 'Machine parameter is required.'}, status=400)
 
     try:
-        # 查詢指定日期和機器下的已預定時間段
+        # 取得對應的機器物件
+        machine = MachineStatus.objects.get(id=machine_id)
+
+        # 查詢當天該機器已被預約的時段
         reserved_slots = Appointment.objects.filter(date=date, machine=machine).values_list('start_time', 'end_time')
 
-        # 格式化時間段為 "HH:MM - HH:MM"
         reserved_slots = [
             f"{start.strftime('%H:%M')} - {end.strftime('%H:%M')}" for start, end in reserved_slots
         ]
 
+    except MachineStatus.DoesNotExist:
+        return JsonResponse({'error': 'Machine not found.'}, status=404)
     except Exception as e:
         return JsonResponse({'error': f'Unexpected error occurred: {str(e)}'}, status=500)
 
-    # 回傳 JSON 格式的時間段
     return JsonResponse(reserved_slots, safe=False)
 
 def success(request):
@@ -144,5 +145,8 @@ def register(request):
             form.add_error(None, 'Invalid student ID')
     else:
         form = CustomUserCreationForm()
+
+    print("表單是否有效：", form.is_valid())
+    print("學號是否允許：", is_allowed_student_id(student_id))
     return render(request, 'booking/register.html', {'form': form})
 

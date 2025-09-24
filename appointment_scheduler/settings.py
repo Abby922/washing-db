@@ -1,4 +1,4 @@
-
+from dotenv import load_dotenv
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -6,9 +6,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "django-insecure-0=f!wsb^0kr(j^2bz8_-=g#^j)w0s&1=56s$s(865r^1i(1i=f"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = []
+DEBUG = False
+ALLOWED_HOSTS=['localhost', '127.0.0.1']
 
 # Application definition
 
@@ -25,6 +24,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -57,21 +57,17 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "appointment_scheduler.wsgi.application"
 
-# Database
-# https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'washing_db',
-        'USER': 'postgres',
-        'PASSWORD': '911222',
-        'HOST': 'localhost',
-        'PORT': '5432',  # PostgreSQL 的預設 port
-    }
-}
-# Password validation
-# https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
+import dj_database_url
+import os
+
+DATABASES = {}
+DATABASE_URL = os.getenv("EXTERNAL_DB_URL") or os.getenv("INTERNAL_DB_URL")
+if DATABASE_URL:
+    DATABASES["default"] = dj_database_url.parse(DATABASE_URL, conn_max_age=600)
+else:
+    raise Exception("No DATABASE_URL found in environment.")
+
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -88,10 +84,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-# Internationalization
-# https://docs.djangoproject.com/en/5.0/topics/i18n/
-
-
 
 
 LANGUAGE_CODE = "en-us"
@@ -102,20 +94,11 @@ USE_I18N = True
 
 USE_TZ = True
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.0/howto/static-files/
-
-
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
-
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# Django Allauth settings
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
 ]
-
 
 AUTH_USER_MODEL = 'booking.CustomUser'
 LOGIN_REDIRECT_URL = '/booking/'
@@ -123,11 +106,8 @@ LOGOUT_REDIRECT_URL = '/login/'
 
 SITE_ID = 1
 
-# settings.py
+APSCHEDULER_DATETIME_FORMAT = "N j, Y, f:s a" 
 
-APSCHEDULER_DATETIME_FORMAT = "N j, Y, f:s a"  # Default
-
-# Configure the APScheduler
 SCHEDULER_CONFIG = {
     'apscheduler.jobstores.default': {
         'type': 'django_apscheduler.jobstores:DjangoJobStore',
@@ -163,7 +143,7 @@ LOGGING = {
     'loggers': {
         'django': {
             'handlers': ['console', 'file'],
-            'level': 'DEBUG',      # ✅ 保持 DEBUG 以寫入檔案
+            'level': 'INFO',
             'propagate': True,
         },
         'django.db.backends': {
@@ -180,16 +160,15 @@ LOGGING = {
 }
 
 STATIC_URL = '/static/'
-
 STATICFILES_DIRS = [
     BASE_DIR/"booking"/"static",
 ]
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 import os
 import dj_database_url
 
-DATABASES = {
-    'default': dj_database_url.config(default=os.environ.get('DATABASE_URL'))
-}
+USE_INTERNAL_DB = os.getenv("USE_INTERNAL_DB", "True").lower() == "true"
 
-# ALLOWED_HOSTS = ['*']
+DATABASE_URL = os.getenv("INTERNAL_DB_URL") if USE_INTERNAL_DB else os.getenv("EXTERNAL_DB_URL")
+

@@ -1,8 +1,14 @@
 print("🔵 執行中：gptlinebot.py")
 
+import django, os
+from dotenv import load_dotenv
+load_dotenv()
+# DJANGO 初始化
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "appointment_scheduler.settings")
+django.setup()
+
 from flask import Flask, request, abort
 from datetime import datetime
-import django, os
 from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
 from linebot.models import MessageEvent, TextMessage, TextSendMessage
@@ -10,12 +16,9 @@ from booking.models import CustomUser, Appointment
 from apscheduler.schedulers.background import BackgroundScheduler
 from django_apscheduler.jobstores import DjangoJobStore
 
-from dotenv import load_dotenv
-load_dotenv()
 
-# DJANGO 初始化
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "appointment_scheduler.settings")
-django.setup()
+
+
 
 # 🔇 抑制 Django 的 SQL debug log
 import logging
@@ -25,10 +28,7 @@ logging.getLogger('django.db.backends').setLevel(logging.WARNING)
 
 # Flask 應用
 app = Flask(__name__)
-scheduler = BackgroundScheduler()
-scheduler.add_jobstore(DjangoJobStore(), "default")
 
-scheduler.start()
 
 LINE_CHANNEL_ACCESS_TOKEN = os.getenv("LINE_CHANNEL_ACCESS_TOKEN")
 LINE_CHANNEL_SECRET = os.getenv("LINE_CHANNEL_SECRET")
@@ -90,7 +90,7 @@ def handle_message(event):
         try:
             user = CustomUser.objects.get(line_id=user_id)
             appointments = Appointment.objects.filter(
-                student_id=user.student_id,
+                user_student_id=user.student_id,
                 date__gte=datetime.today().date()
             ).order_by("date", "start_time")
             if appointments.exists():

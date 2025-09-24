@@ -5,6 +5,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from django_apscheduler.jobstores import DjangoJobStore, register_events, register_job
 from booking.utils.reminders import check_upcoming_appointments, check_machines_and_notify
 import logging
+from booking.tasks import run_reminders, delete_expired_appointments
 
 logging.getLogger('django.db.backends').setLevel(logging.WARNING)
 
@@ -22,10 +23,18 @@ class Command(BaseCommand):
         scheduler.add_jobstore(DjangoJobStore(), "default")
 
         scheduler.add_job(
-            "booking.management.commands.run_scheduler:run_reminders",
+            run_reminders,
             trigger="interval",
             minutes=1,
             id="remind_appointments",
+            replace_existing=True,
+        )
+
+        scheduler.add_job(
+            delete_expired_appointments,
+            trigger="interval",
+            hours=0.5,
+            id="delete_expired_appointments",
             replace_existing=True,
         )
 

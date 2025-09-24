@@ -13,6 +13,28 @@
             </h2>
     </div>
     <h2 class="pagetitle">Register</h2>
+    {% if form.errors %}
+        <div class="error">
+            <p>⚠️ 表單填寫有誤：</p>
+            <ul>
+                {% for field in form %}
+                    {% for error in field.errors %}
+                        <li>{{ field.label }}：{{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+                {% for error in form.non_field_errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    {% if student_id_invalid %}
+        <div class="error">
+            ⚠️ 學號未被授權，請確認是否輸入錯誤或聯絡管理員。
+        </div>
+    {% endif %}
+    
     <form method="post">
         {% csrf_token %}
         <div class="terms">

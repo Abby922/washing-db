@@ -83,6 +83,7 @@ def test_func():
         })
 
 @register_job(scheduler, CronTrigger(minute='1,31', hour='*'), id="delete_expired_appointments", replace_existing=True, misfire_grace_time=1)
+
 def delete_expired_appointments():
     now = datetime.now()
     expired_appointments = Appointment.objects.filter(

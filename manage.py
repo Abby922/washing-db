@@ -2,6 +2,8 @@
 """Django's command-line utility for administrative tasks."""
 import os
 import sys
+import dotenv
+dotenv.load_dotenv()
 
 print("🔵 執行中：manage.py")
 

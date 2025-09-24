@@ -1,5 +1,5 @@
 from django import forms
-from .models import Appointment
+from .models import Appointment,MachineStatus
 import datetime
 
 
@@ -12,9 +12,10 @@ class AppointmentForm(forms.ModelForm):
         choices=[],
         widget=forms.CheckboxSelectMultiple,
     )
-    machine = forms.ChoiceField(
-        choices=[('1號機', '1號機'), ('2號機', '2號機'), ('3號機', '3號機'), ('4號機', '4號機')],
+    machine = forms.ModelChoiceField(
+        queryset=MachineStatus.objects.all(),
         required=True,
+        empty_label=None,
     )
 
     def __init__(self, *args, **kwargs):
@@ -41,7 +42,7 @@ class AppointmentForm(forms.ModelForm):
         choices = cleaned_data.get('choices')
 
         if choices:
-            existing_appointments = Appointment.objects.filter(student_id=self.user.student_id)
+            existing_appointments = Appointment.objects.filter(user__student_id=self.user.student_id)
             total_appointments = len(existing_appointments) + len(choices)
 
             if total_appointments > 2:
